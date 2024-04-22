@@ -4,13 +4,13 @@
 
 @0x94f21a4864bd2c65;
 
-using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("ipc::capnp::messages");
+# using Cxx = import "/capnp/c++.capnp";
+# $Cxx.namespace("ipc::capnp::messages");
 
-using Proxy = import "/mp/proxy.capnp";
-$Proxy.include("interfaces/chain.h");
-$Proxy.include("rpc/server.h");
-$Proxy.includeTypes("ipc/capnp/chain-types.h");
+using Proxy = import "proxy.capnp";
+# $Proxy.include("interfaces/chain.h");
+# $Proxy.include("rpc/server.h");
+# $Proxy.includeTypes("ipc/capnp/chain-types.h");
 
 using Common = import "common.capnp";
 using Handler = import "handler.capnp";

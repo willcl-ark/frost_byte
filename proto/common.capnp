@@ -4,12 +4,12 @@
 
 @0xcd2c6232cb484a28;
 
-using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("ipc::capnp::messages");
+# using Cxx = import "/capnp/c++.capnp";
+# $Cxx.namespace("ipc::capnp::messages");
 
-using Proxy = import "/mp/proxy.capnp";
-$Proxy.include("ipc/capnp/common.h");
-$Proxy.includeTypes("ipc/capnp/common-types.h");
+using Proxy = import "proxy.capnp";
+# $Proxy.include("ipc/capnp/common.h");
+# $Proxy.includeTypes("ipc/capnp/common-types.h");
 
 struct Settings $Proxy.wrap("common::Settings") {
    forcedSettings @0 :List(Pair(Text, Text)) $Proxy.name("forced_settings");

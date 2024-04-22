@@ -4,12 +4,12 @@
 
 @0x92546c47dc734b2e;
 
-using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("ipc::capnp::messages");
+# using Cxx = import "/capnp/c++.capnp";
+# $Cxx.namespace("ipc::capnp::messages");
 
-using Proxy = import "/mp/proxy.capnp";
-$Proxy.include("ipc/capnp/node.h");
-$Proxy.includeTypes("ipc/capnp/node-types.h");
+using Proxy = import "proxy.capnp";
+# $Proxy.include("ipc/capnp/node.h");
+# $Proxy.includeTypes("ipc/capnp/node-types.h");
 
 using Common = import "common.capnp";
 using Handler = import "handler.capnp";

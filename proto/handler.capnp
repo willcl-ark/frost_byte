@@ -4,11 +4,11 @@
 
 @0xebd8f46e2f369076;
 
-using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("ipc::capnp::messages");
+# using Cxx = import "/capnp/c++.capnp";
+# $Cxx.namespace("ipc::capnp::messages");
 
-using Proxy = import "/mp/proxy.capnp";
-$Proxy.include("interfaces/handler.h");
+using Proxy = import "proxy.capnp";
+# $Proxy.include("interfaces/handler.h");
 
 interface Handler $Proxy.wrap("interfaces::Handler") {
     destroy @0 (context :Proxy.Context) -> ();

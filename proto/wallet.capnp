@@ -4,12 +4,12 @@
 
 @0xe234cce74feea00c;
 
-using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("ipc::capnp::messages");
+# using Cxx = import "/capnp/c++.capnp";
+# $Cxx.namespace("ipc::capnp::messages");
 
-using Proxy = import "/mp/proxy.capnp";
-$Proxy.include("ipc/capnp/wallet.h");
-$Proxy.includeTypes("ipc/capnp/wallet-types.h");
+using Proxy = import "proxy.capnp";
+# $Proxy.include("ipc/capnp/wallet.h");
+# $Proxy.includeTypes("ipc/capnp/wallet-types.h");
 
 using Chain = import "chain.capnp";
 using Common = import "common.capnp";
