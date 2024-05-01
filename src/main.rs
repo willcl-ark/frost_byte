@@ -4,16 +4,25 @@ use tokio_util::compat::*;
 
 pub mod chain_capnp;
 pub mod common_capnp;
+pub mod echo_capnp;
 pub mod handler_capnp;
+pub mod init_capnp;
+pub mod node_capnp;
 pub mod proxy_capnp;
 pub mod wallet_capnp;
-use crate::chain_capnp::chain::Client;
+use crate::init_capnp::init::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::task::LocalSet::new()
         .run_until(async move {
-            let path = std::path::Path::new("/root/.bitcoin/sockets/node.sock");
+            let args: Vec<String> = ::std::env::args().collect();
+            if args.len() != 2 {
+                println!("Usage:\n\t{} [path]", args[0]);
+                return Ok(());
+            }
+            let binding = args[1].to_string();
+            let path = std::path::Path::new(&binding);
             let stream = UnixStream::connect(path).await?;
             let (reader, writer) = stream.into_split();
 
@@ -31,14 +40,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let frost_byte: Client = rpc_system.bootstrap(rpc_twoparty_capnp::Side::Server);
             tokio::task::spawn_local(rpc_system);
 
-            let mut request = frost_byte.get_height_request();
+            // I think we should perhaps make a context here and later apply the thread to it?
+            // let context = proxy_capnp::context::Builder::get_thread
+
+            // Call construct first to get back a ThreadMap
+            let mut request = frost_byte.construct_request();
             request.get();
             let reply = request.send().promise.await?;
+            println!("received: {:?}", reply.get()?);
 
-            println!(
-                "received: {:?}",
-                reply.get()? // reply.get()?.get_reply()?.get_message()?.to_str()?
-            );
+            // Call echo
+            let mut request = frost_byte.make_echo_request();
+            request.get();
+            let reply = request.send().promise.await?;
+            println!("received: {:?}", reply.get()?);
+
             Ok(())
         })
         .await
