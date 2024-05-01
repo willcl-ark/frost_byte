@@ -7,7 +7,11 @@ pub mod common_capnp;
 pub mod handler_capnp;
 pub mod proxy_capnp;
 pub mod wallet_capnp;
-use crate::chain_capnp::chain::Client;
+pub mod init_capnp;
+pub mod echo_capnp;
+pub mod node_capnp;
+
+use crate::init_capnp::init::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -31,14 +35,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let frost_byte: Client = rpc_system.bootstrap(rpc_twoparty_capnp::Side::Server);
             tokio::task::spawn_local(rpc_system);
 
-            let mut request = frost_byte.get_height_request();
-            request.get();
+            println!("make echo request");
+            let request = frost_byte.make_echo_request();
+            println!("send echo request");
             let reply = request.send().promise.await?;
-
-            println!(
-                "received: {:?}",
-                reply.get()? // reply.get()?.get_reply()?.get_message()?.to_str()?
-            );
+            println!("get echo request");
+            let echo = reply.get()?;
+            let client = echo.get_result()?;
+            let mut echo_request = client.echo_request();
+            let msg = String::from("Hi bill");
+            echo_request.get().set_echo(&msg);
+            let response = echo_request.send().promise.await?;
+            println!("{:?}", response.get());
             Ok(())
         })
         .await
