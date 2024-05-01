@@ -7,13 +7,13 @@ pub mod common_capnp;
 pub mod handler_capnp;
 pub mod proxy_capnp;
 pub mod wallet_capnp;
-use crate::wallet_capnp::wallet_loader::Client;
+use crate::chain_capnp::chain::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::task::LocalSet::new()
         .run_until(async move {
-            let path = std::path::Path::new("/home/will/src/bitcoin/src/bitcoin-node");
+            let path = std::path::Path::new("/root/.bitcoin/sockets/node.sock");
             let stream = UnixStream::connect(path).await?;
             let (reader, writer) = stream.into_split();
 
@@ -26,13 +26,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 rpc_twoparty_capnp::Side::Client,
                 Default::default(),
             ));
-            let msg = String::from("Hello Josie");
 
             let mut rpc_system = RpcSystem::new(rpc_network, None);
             let frost_byte: Client = rpc_system.bootstrap(rpc_twoparty_capnp::Side::Server);
             tokio::task::spawn_local(rpc_system);
 
-            let mut request = frost_byte.list_wallet_dir_request();
+            let mut request = frost_byte.get_height_request();
             request.get();
             let reply = request.send().promise.await?;
 
