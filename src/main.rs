@@ -2,6 +2,9 @@ use capnp_rpc::{rpc_twoparty_capnp, twoparty, RpcSystem};
 use tokio::net::UnixStream;
 use tokio_util::compat::*;
 
+pub mod chain_capnp;
+pub mod common_capnp;
+pub mod handler_capnp;
 pub mod proxy_capnp;
 pub mod wallet_capnp;
 use crate::wallet_capnp::wallet_loader::Client;
@@ -31,8 +34,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let mut request = frost_byte.list_wallet_dir_request();
             request.get();
-            // request.get().init_echo();
-            // request.get().set_echo(&msg);
             let reply = request.send().promise.await?;
 
             println!(
