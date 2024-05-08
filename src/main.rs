@@ -1,3 +1,4 @@
+use capnp::capability::{FromClientHook, FromServer};
 use capnp_rpc::{rpc_twoparty_capnp, twoparty, RpcSystem};
 use tokio::net::UnixStream;
 use tokio_util::compat::*;
@@ -10,12 +11,12 @@ pub mod init_capnp;
 pub mod node_capnp;
 pub mod proxy_capnp;
 pub mod wallet_capnp;
-use crate::init_capnp::init::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::task::LocalSet::new()
         .run_until(async move {
+            // Process args
             let args: Vec<String> = ::std::env::args().collect();
             if args.len() != 2 {
                 println!("Usage:\n\t{} [path]", args[0]);
@@ -23,9 +24,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             let binding = args[1].to_string();
             let path = std::path::Path::new(&binding);
+
+            // Create bi-directional stream
             let stream = UnixStream::connect(path).await?;
             let (reader, writer) = stream.into_split();
-
             let reader_compat = reader.compat();
             let writer_compat = writer.compat_write();
 
@@ -37,23 +39,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             ));
 
             let mut rpc_system = RpcSystem::new(rpc_network, None);
-            let frost_byte: Client = rpc_system.bootstrap(rpc_twoparty_capnp::Side::Server);
+            let init_client: init_capnp::init::Client =
+                rpc_system.bootstrap(rpc_twoparty_capnp::Side::Server);
             tokio::task::spawn_local(rpc_system);
 
-            // I think we should perhaps make a context here and later apply the thread to it?
-            // let context = proxy_capnp::context::Builder::get_thread
-
             // Call construct first to get back a ThreadMap
-            let mut request = frost_byte.construct_request();
-            request.get();
-            let reply = request.send().promise.await?;
-            println!("received: {:?}", reply.get()?);
+            //
+            //     pub fn construct_request(&self) -> ::capnp::capability::Request<crate::init_capnp::init::construct_params::Owned,crate::init_capnp::init::construct_results::Owned> {
+            //         self.client.new_call(_private::TYPE_ID, 0, ::core::option::Option::None)
+            //     }
+            let mut construct_request = init_client.construct_request();
+            construct_request.get();
+            let construct_response = construct_request.send().promise.await?;
+            println!("received: {:?}", construct_response.get()?);
 
-            // Call echo
-            let mut request = frost_byte.make_echo_request();
-            request.get();
-            let reply = request.send().promise.await?;
-            println!("received: {:?}", reply.get()?);
+            // Next we should do something with this threadmap ???
+            // let threadmap_client = construct_response.get()?.get_thread_map()?;
+            // let mut thread = threadmap_client.make_thread_request();
+            // let response = thread.send().promise.await?;
+            // println!("received: {:?}", response.get()?);
+            // thread.get().get_cap().set_as_capability(frost_byte);
+
+            // Make echo request, passing in the threadmap, or having "applied" it
+            // let init_client_hook = init_client.as_client_hook();
+            // let echo_client = echo_capnp::echo::Client::from_server(rpc_system);
+
+            // let mut request = echo_client.echo_request();
+            // request.get();
+            // let reply = request.send().promise.await?;
+            // println!("received: {:?}", reply.get()?);
 
             Ok(())
         })
