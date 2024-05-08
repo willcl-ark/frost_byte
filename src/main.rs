@@ -1,3 +1,4 @@
+use capnp::capability::FromClientHook;
 use capnp_rpc::{rpc_twoparty_capnp, twoparty, RpcSystem};
 use tokio::net::UnixStream;
 use tokio_util::compat::*;
@@ -91,34 +92,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             // Optionally set some params
             // construct_request.set();
 
-            // This gets the params
+            // This gets a params builder I think?
             // construct_request.get();
 
             // Wait for the result.  This is the only line that blocks.
             let construct_response = construct_request.send().promise.await?;
 
-            // All done. Print the result
+            // Got a response.
             println!(
                 "received construct reponse: {:?}",
                 construct_response.get()?
             );
 
-            // Here we need seem to need to get a new proxy_capnp::thread_map::Client so that we
-            // can get the ThreadMap, request a new thread, and then use it as context in future
-            // calls?
+            // Get a thread_map which also returns a proxy_capnp::thread_map::Client
+            // Use this in future init_capnp::* calls perhaps?
             let thread_map = construct_response.get()?.get_thread_map()?;
             let thread_request = thread_map.make_thread_request();
             let thread_response = thread_request.send().promise.await?;
             println!("received thread response: {:?}", thread_response.get()?);
 
-            // Make echo request, passing in the threadmap, or having "applied" it
-            // let init_client_hook = init_client.as_client_hook();
-            // let echo_client = echo_capnp::echo::Client::from_server(rpc_system);
-
-            // let mut request = echo_client.echo_request();
-            // request.get();
-            // let reply = request.send().promise.await?;
-            // println!("received: {:?}", reply.get()?);
+            // Make a new echo request
+            let mut echo_request = init_client.make_echo_request();
+            // Get the request
+            let params = echo_request.get();
+            // Get the context and set the thread on it
+            params
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
+            // Wait for the response
+            let reply = echo_request.send().promise.await?;
+            println!("received echo response: {:?}", reply.get()?);
 
             Ok(())
         })
