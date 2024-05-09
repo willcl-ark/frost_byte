@@ -123,6 +123,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let reply = echo_request.send().promise.await?;
             println!("received echo response: {:?}", reply.get()?);
 
+            // Make a new wallet request
+            // Ok so, the wallet needs:
+            //
+            //     makeWalletLoader @4 (context :Proxy.Context, globalArgs :Common.GlobalArgs, chain :Chain.Chain) -> (result :Wallet.WalletLoader);
+            //
+            // bitcoin-node is already started for us and has args and chain. So i presume we need to fetch them somehow. Going to leave for now.
+            let mut wallet_request = init_client.make_wallet_loader_request();
+            // Get the request
+            let wallet_params = wallet_request.get();
+            // Get the context and set the thread on it
+            wallet_params
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
+            // Wait for the response
+            let wallet_reply = wallet_request.send().promise.await?;
+            println!("received wallet response: {:?}", wallet_reply.get()?);
+
             Ok(())
         })
         .await
