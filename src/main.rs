@@ -1,4 +1,3 @@
-use capnp::capability::FromClientHook;
 use capnp_rpc::{rpc_twoparty_capnp, twoparty, RpcSystem};
 use tokio::net::UnixStream;
 use tokio_util::compat::*;
@@ -143,18 +142,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             //     makeWalletLoader @4 (context :Proxy.Context, globalArgs :Common.GlobalArgs, chain :Chain.Chain) -> (result :Wallet.WalletLoader);
             // ----------------------------------------------------------------
 
-            // Get a chain
-            let mut chain_request = init_client.make_chain_request();
-            // Get the request
-            let params = chain_request.get();
-            // Get the context and set the thread on it
-            params
+            // Make a chain client request
+            let mut make_chain_request = init_client.make_chain_request();
+            // Set the context
+            make_chain_request
+                .get()
                 .get_context()?
                 .set_thread(thread_response.get()?.get_result()?);
+
             // Wait for the response
-            let chain_reply = chain_request.send().promise.await?;
-            println!("received chain response: {:?}", chain_reply.get()?);
-            let node = chain_reply.get()?;
+            let chain_client_response = make_chain_request.send().promise.await?;
+            println!(
+                "received chain_client response: {:?}",
+                chain_client_response.get()?
+            );
+
+            // We can reuse this client
+            let chain_client = chain_client_response.get()?.get_result()?;
+            let mut new_chain_request = chain_client.get_height_request();
+            new_chain_request
+                .get()
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
+            let new_chain = new_chain_request.send().promise.await?;
+            println!("received chain response: {:?}", new_chain.get()?);
 
             // How do I
 
