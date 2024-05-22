@@ -1,1 +1,9 @@
 /target
+/src/chain_capnp.rs
+/src/common_capnp.rs
+/src/echo_capnp.rs
+/src/handler_capnp.rs
+/src/init_capnp.rs
+/src/node_capnp.rs
+/src/proxy_capnp.rs
+/src/wallet_capnp.rs
