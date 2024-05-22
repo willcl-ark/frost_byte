@@ -168,6 +168,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("received chain response: {:?}", new_chain.get()?);
 
             // Make a node client request
+            //
+            // We need a node here because the node is what keeps all of the global state, e.g.
+            // our bitcoin.conf and any startup options passed
             let mut make_node_request = init_client.make_node_request();
             // Set the context
             make_node_request
@@ -181,30 +184,46 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "received make_node_request response: {:?}",
                 node_client_response.get()?
             );
-
-            // We can reuse this client
             let node_client = node_client_response.get()?.get_result()?;
-            let mut binding = node_client.base_initialize_request();
-            let gargs = binding.get();
-            let global_args = gargs.get_global_args()?;
 
-            // Make a new wallet request
-            // Ok so, the wallet needs:
+            // Now that I have a node, I can use custom_wallet_loader to have the node return
+            // *its* wallet loader to me. This means the node process can use its internal state
+            // (globalArgs) to create the wallet loader and then return the wallet loader to me
+            // which then allows me to "remote control" the nodes wallet.
             //
-            //     makeWalletLoader @4 (context :Proxy.Context, globalArgs :Common.GlobalArgs, chain :Chain.Chain) -> (result :Wallet.WalletLoader);
-            //
-            // bitcoin-node is already started for us and has args and chain. So i presume we need to fetch them somehow. Going to leave for now.
-            let mut wallet_request = init_client.make_wallet_loader_request();
-            wallet_request
+            // If I wanted to make my own wallet, I would need to get the state from bitcoin.conf
+            // or we need to update either the Init or Node capnp interfaces with a new method just
+            // for returning global state (gargs, in this case).
+            let mut custom_wallet_loader_request = node_client.custom_wallet_loader_request();
+            custom_wallet_loader_request
                 .get()
                 .get_context()?
                 .set_thread(thread_response.get()?.get_result()?);
-            wallet_request
+            let cwl_response = custom_wallet_loader_request.send().promise.await?;
+            println!(
+                "received cwl request: {:?}",
+                cwl_response.get()?
+            );
+
+            let mut create_wallet_request = cwl_response.get()?.get_result()?.create_wallet_request();
+            create_wallet_request
                 .get()
-                .set_global_args(global_args.reborrow_as_reader())?;
-            // Wait for the response
-            let wallet_reply = wallet_request.send().promise.await?;
-            println!("received wallet response: {:?}", wallet_reply.get()?);
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
+            create_wallet_request
+                .get()
+                .set_name("frost_byte");
+            let _create_wallet_response = create_wallet_request.send().promise.await?;
+
+            // Check that our wallet was created
+            let mut list_wallet_dir_request = cwl_response.get()?.get_result()?.list_wallet_dir_request();
+            list_wallet_dir_request
+                .get()
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
+            let list_wallet_dir_response = list_wallet_dir_request.send().promise.await?;
+            println!("got a list wallet dir response: {:?}", list_wallet_dir_response.get()?);
+
 
             Ok(())
         })
