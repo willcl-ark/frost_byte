@@ -167,24 +167,44 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let new_chain = new_chain_request.send().promise.await?;
             println!("received chain response: {:?}", new_chain.get()?);
 
-            // How do I
+            // Make a node client request
+            let mut make_node_request = init_client.make_node_request();
+            // Set the context
+            make_node_request
+                .get()
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
 
-            // // Make a new wallet request
-            // // Ok so, the wallet needs:
-            // //
-            // //     makeWalletLoader @4 (context :Proxy.Context, globalArgs :Common.GlobalArgs, chain :Chain.Chain) -> (result :Wallet.WalletLoader);
-            // //
-            // // bitcoin-node is already started for us and has args and chain. So i presume we need to fetch them somehow. Going to leave for now.
-            // let mut wallet_request = init_client.make_wallet_loader_request();
-            // // Get the request
-            // let wallet_params = wallet_request.get();
-            // // Get the context and set the thread on it
-            // wallet_params
-            //     .get_context()?
-            //     .set_thread(thread_response.get()?.get_result()?);
-            // // Wait for the response
-            // let wallet_reply = wallet_request.send().promise.await?;
-            // println!("received wallet response: {:?}", wallet_reply.get()?);
+            // Wait for the response
+            let node_client_response = make_node_request.send().promise.await?;
+            println!(
+                "received make_node_request response: {:?}",
+                node_client_response.get()?
+            );
+
+            // We can reuse this client
+            let node_client = node_client_response.get()?.get_result()?;
+            let mut binding = node_client.base_initialize_request();
+            let gargs = binding.get();
+            let global_args = gargs.get_global_args()?;
+
+            // Make a new wallet request
+            // Ok so, the wallet needs:
+            //
+            //     makeWalletLoader @4 (context :Proxy.Context, globalArgs :Common.GlobalArgs, chain :Chain.Chain) -> (result :Wallet.WalletLoader);
+            //
+            // bitcoin-node is already started for us and has args and chain. So i presume we need to fetch them somehow. Going to leave for now.
+            let mut wallet_request = init_client.make_wallet_loader_request();
+            wallet_request
+                .get()
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
+            wallet_request
+                .get()
+                .set_global_args(global_args.reborrow_as_reader())?;
+            // Wait for the response
+            let wallet_reply = wallet_request.send().promise.await?;
+            println!("received wallet response: {:?}", wallet_reply.get()?);
 
             Ok(())
         })
