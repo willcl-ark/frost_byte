@@ -88,50 +88,60 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             // Make a call to the capability.
             let construct_request = init_client.construct_request();
-
-            // Optionally set some params
-            // construct_request.set();
-
-            // This gets a params builder I think?
-            // construct_request.get();
-
             // Wait for the result.  This is the only line that blocks.
             let construct_response = construct_request.send().promise.await?;
-
-            // Got a response.
             println!(
                 "received construct reponse: {:?}",
                 construct_response.get()?
             );
 
+            // ----------------------------------------------------------------
             // Get a thread_map which also returns a proxy_capnp::thread_map::Client
             // Use this in future init_capnp::* calls perhaps?
+            // ----------------------------------------------------------------
             let thread_map = construct_response.get()?.get_thread_map()?;
             let thread_request = thread_map.make_thread_request();
             let thread_response = thread_request.send().promise.await?;
             println!("received thread response: {:?}", thread_response.get()?);
 
-            // Make a new echo request
-            let mut echo_request = init_client.make_echo_request();
-            // Get the request
-            echo_request
+            // ----------------------------------------------------------------
+            // Create a MakeEcho object on the server
+            // ----------------------------------------------------------------
+            // Make an echo client request
+            let mut make_echo_request = init_client.make_echo_request();
+            // Set the context
+            make_echo_request
                 .get()
                 .get_context()?
                 .set_thread(thread_response.get()?.get_result()?);
 
             // Wait for the response
-            let echo_reply = echo_request.send().promise.await?;
-            println!("received echo response: {:?}", echo_reply.get()?);
+            let echo_client_response = make_echo_request.send().promise.await?;
+            println!(
+                "received echo_client response: {:?}",
+                echo_client_response.get()?
+            );
 
-            let mut new_echo_request = echo_reply.get()?.get_result()?.echo_request();
+            // ----------------------------------------------------------------
+            // Make a new echo CLIENT
+            // ----------------------------------------------------------------
+            // We can reuse this client
+            let echo_client = echo_client_response.get()?.get_result()?;
+
+            let mut new_echo_request = echo_client.echo_request();
             new_echo_request
                 .get()
                 .get_context()?
                 .set_thread(thread_response.get()?.get_result()?);
-            new_echo_request.get().set_echo("hello");
-
+            new_echo_request.get().set_echo("Hello, world!");
             let new_echo = new_echo_request.send().promise.await?;
             println!("received echo response: {:?}", new_echo.get()?);
+
+            // ----------------------------------------------------------------
+            // We want to make a new chain here... we also need to make globalArgs
+            // The wallet needs:
+            //     makeWalletLoader @4 (context :Proxy.Context, globalArgs :Common.GlobalArgs, chain :Chain.Chain) -> (result :Wallet.WalletLoader);
+            // ----------------------------------------------------------------
 
             // Get a chain
             let mut chain_request = init_client.make_chain_request();
