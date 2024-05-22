@@ -114,31 +114,56 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             // Make a new echo request
             let mut echo_request = init_client.make_echo_request();
             // Get the request
-            let params = echo_request.get();
+            echo_request
+                .get()
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
+
+            // Wait for the response
+            let echo_reply = echo_request.send().promise.await?;
+            println!("received echo response: {:?}", echo_reply.get()?);
+
+            let mut new_echo_request = echo_reply.get()?.get_result()?.echo_request();
+            new_echo_request
+                .get()
+                .get_context()?
+                .set_thread(thread_response.get()?.get_result()?);
+            new_echo_request.get().set_echo("hello");
+
+            let new_echo = new_echo_request.send().promise.await?;
+            println!("received echo response: {:?}", new_echo.get()?);
+
+            // Get a chain
+            let mut chain_request = init_client.make_chain_request();
+            // Get the request
+            let params = chain_request.get();
             // Get the context and set the thread on it
             params
                 .get_context()?
                 .set_thread(thread_response.get()?.get_result()?);
             // Wait for the response
-            let reply = echo_request.send().promise.await?;
-            println!("received echo response: {:?}", reply.get()?);
+            let chain_reply = chain_request.send().promise.await?;
+            println!("received chain response: {:?}", chain_reply.get()?);
+            let node = chain_reply.get()?;
 
-            // Make a new wallet request
-            // Ok so, the wallet needs:
-            //
-            //     makeWalletLoader @4 (context :Proxy.Context, globalArgs :Common.GlobalArgs, chain :Chain.Chain) -> (result :Wallet.WalletLoader);
-            //
-            // bitcoin-node is already started for us and has args and chain. So i presume we need to fetch them somehow. Going to leave for now.
-            let mut wallet_request = init_client.make_wallet_loader_request();
-            // Get the request
-            let wallet_params = wallet_request.get();
-            // Get the context and set the thread on it
-            wallet_params
-                .get_context()?
-                .set_thread(thread_response.get()?.get_result()?);
-            // Wait for the response
-            let wallet_reply = wallet_request.send().promise.await?;
-            println!("received wallet response: {:?}", wallet_reply.get()?);
+            // How do I
+
+            // // Make a new wallet request
+            // // Ok so, the wallet needs:
+            // //
+            // //     makeWalletLoader @4 (context :Proxy.Context, globalArgs :Common.GlobalArgs, chain :Chain.Chain) -> (result :Wallet.WalletLoader);
+            // //
+            // // bitcoin-node is already started for us and has args and chain. So i presume we need to fetch them somehow. Going to leave for now.
+            // let mut wallet_request = init_client.make_wallet_loader_request();
+            // // Get the request
+            // let wallet_params = wallet_request.get();
+            // // Get the context and set the thread on it
+            // wallet_params
+            //     .get_context()?
+            //     .set_thread(thread_response.get()?.get_result()?);
+            // // Wait for the response
+            // let wallet_reply = wallet_request.send().promise.await?;
+            // println!("received wallet response: {:?}", wallet_reply.get()?);
 
             Ok(())
         })
