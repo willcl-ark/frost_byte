@@ -6,7 +6,7 @@ use tokio::net::UnixStream;
 use tokio_util::compat::*;
 
 // Setup the connection, initialize the RPC system and return init client and thread client
-pub(crate) async fn setup_connection(
+pub async fn setup_connection(
     path: &Path,
 ) -> Result<(init_capnp::init::Client, proxy_capnp::thread::Client), Box<dyn std::error::Error>> {
     let stream = UnixStream::connect(path).await?;

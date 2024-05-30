@@ -3,7 +3,7 @@ use crate::node_capnp;
 use crate::proxy_capnp;
 
 // Create Node client
-pub(crate) async fn create_node_client(
+pub async fn create_node_client(
     init_client: &init_capnp::init::Client,
     thread_client: &proxy_capnp::thread::Client,
 ) -> Result<node_capnp::node::Client, Box<dyn std::error::Error>> {

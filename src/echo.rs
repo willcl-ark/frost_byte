@@ -3,7 +3,7 @@ use crate::init_capnp;
 use crate::proxy_capnp;
 
 // Create Echo client
-pub(crate) async fn create_echo_client(
+pub async fn create_echo_client(
     init_client: &init_capnp::init::Client,
     thread_client: &proxy_capnp::thread::Client,
 ) -> Result<echo_capnp::echo::Client, Box<dyn std::error::Error>> {
@@ -23,7 +23,7 @@ pub(crate) async fn create_echo_client(
 }
 
 // Send Echo request
-pub(crate) async fn send_echo_request(
+pub async fn send_echo_request(
     echo_client: &echo_capnp::echo::Client,
     thread_client: &proxy_capnp::thread::Client,
 ) -> Result<(), Box<dyn std::error::Error>> {

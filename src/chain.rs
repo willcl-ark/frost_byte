@@ -3,7 +3,7 @@ use crate::init_capnp;
 use crate::proxy_capnp;
 
 // Create a Chain client
-pub(crate) async fn create_chain_client(
+pub async fn create_chain_client(
     init_client: &init_capnp::init::Client,
     thread_client: &proxy_capnp::thread::Client,
 ) -> Result<chain_capnp::chain::Client, Box<dyn std::error::Error>> {
@@ -23,7 +23,7 @@ pub(crate) async fn create_chain_client(
 }
 
 // Query Chain height
-pub(crate) async fn query_chain_height(
+pub async fn query_chain_height(
     chain_client: &chain_capnp::chain::Client,
     thread_client: &proxy_capnp::thread::Client,
 ) -> Result<(), Box<dyn std::error::Error>> {

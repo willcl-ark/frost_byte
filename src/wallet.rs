@@ -3,7 +3,7 @@ use crate::proxy_capnp;
 use crate::wallet_capnp;
 
 // Manage wallets using the Node client
-pub(crate) async fn create_wallet_loader_client(
+pub async fn create_wallet_loader_client(
     node_client: &node_capnp::node::Client,
     thread_client: &proxy_capnp::thread::Client,
 ) -> Result<wallet_capnp::wallet_loader::Client, Box<dyn std::error::Error>> {
@@ -21,7 +21,7 @@ pub(crate) async fn create_wallet_loader_client(
 }
 
 // Manage wallets using the Wallet Loader client
-pub(crate) async fn create_new_wallet(
+pub async fn create_new_wallet(
     wallet_loader_client: &wallet_capnp::wallet_loader::Client,
     thread_client: &proxy_capnp::thread::Client,
 ) -> Result<(), Box<dyn std::error::Error>> {
