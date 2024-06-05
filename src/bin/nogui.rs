@@ -15,11 +15,20 @@ async fn main() -> Result<()> {
 
     let spawner = LocalSpawner::new();
 
+    // Setup initial connection
     let (send, response) = tokio::sync::oneshot::channel();
     spawner.spawn(Task::SetupConnection(path, send));
-
     match response.await {
         Ok(Ok(())) => println!("Connection setup successfully"),
+        Ok(Err(e)) => println!("Error occurred: {}", e),
+        Err(_) => println!("The sender dropped"),
+    }
+
+    // Echo Client setup
+    let (send, response) = tokio::sync::oneshot::channel();
+    spawner.spawn(Task::SetupEchoClient(send));
+    match response.await {
+        Ok(Ok(())) => println!("Echo client setup successfully"),
         Ok(Err(e)) => println!("Error occurred: {}", e),
         Err(_) => println!("The sender dropped"),
     }
