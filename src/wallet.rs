@@ -30,7 +30,7 @@ pub async fn create_new_wallet(
         .get()
         .get_context()?
         .set_thread(thread_client.clone());
-    create_wallet_request.get().set_name("frost_byte");
+    create_wallet_request.get().set_name("frost_byte2");
     create_wallet_request.send().promise.await?;
 
     let mut list_wallet_dir_request = wallet_loader_client.list_wallet_dir_request();

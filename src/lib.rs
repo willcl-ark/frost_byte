@@ -34,4 +34,6 @@ pub mod chain;
 pub mod echo;
 pub mod init;
 pub mod node;
+pub mod spawner;
+pub mod tasks;
 pub mod wallet;
