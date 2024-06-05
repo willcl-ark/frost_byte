@@ -1,58 +1,11 @@
 use anyhow::Result;
+use frost_byte::gui::{App, WalletMessage};
 use frost_byte::spawner::LocalSpawner;
 use frost_byte::tasks::Task;
-use iced::widget::button::State;
-use iced::widget::{button, column};
-use iced::{executor, Application, Command, Element, Settings, Theme};
+use iced::{Application, Settings};
 use std::path::PathBuf;
 use std::str::FromStr;
 use tokio::sync::mpsc;
-
-#[derive(Debug, Clone)]
-enum WalletMessage {
-    CreateNewWallet,
-}
-
-struct MyApp {
-    create_wallet_button: State,
-    spawner: LocalSpawner,
-    tx: mpsc::UnboundedSender<WalletMessage>,
-}
-
-impl Application for MyApp {
-    type Executor = executor::Default;
-    type Message = WalletMessage;
-    type Flags = (LocalSpawner, mpsc::UnboundedSender<WalletMessage>);
-    type Theme = Theme;
-
-    fn new(flags: Self::Flags) -> (Self, Command<Self::Message>) {
-        (
-            MyApp {
-                create_wallet_button: State::new(),
-                spawner: flags.0,
-                tx: flags.1,
-            },
-            Command::none(),
-        )
-    }
-
-    fn title(&self) -> String {
-        String::from("My App")
-    }
-
-    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        match message {
-            WalletMessage::CreateNewWallet => {
-                let _ = self.tx.send(WalletMessage::CreateNewWallet);
-            }
-        }
-        Command::none()
-    }
-
-    fn view(&self) -> Element<Self::Message> {
-        column![button("Create new wallet").on_press(WalletMessage::CreateNewWallet),].into()
-    }
-}
 
 fn main() -> Result<()> {
     let rt = tokio::runtime::Builder::new_multi_thread()
@@ -103,7 +56,7 @@ fn main() -> Result<()> {
 
         // Run the GUI on the main thread
         iced::Settings::with_flags((spawner.clone(), tx.clone()));
-        MyApp::run(Settings::with_flags((spawner, tx))).unwrap();
+        App::run(Settings::with_flags((spawner, tx))).unwrap();
 
         Ok(())
     })
