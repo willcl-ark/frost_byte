@@ -2,7 +2,6 @@ use anyhow::Result;
 use frost_byte::gui::{App, WalletMessage};
 use frost_byte::spawner::LocalSpawner;
 use frost_byte::tasks::Task;
-use iced::{Application, Settings};
 use std::path::PathBuf;
 use std::str::FromStr;
 use tokio::sync::mpsc;
@@ -54,9 +53,14 @@ fn main() -> Result<()> {
             }
         });
 
-        // Run the GUI on the main thread
-        iced::Settings::with_flags((spawner.clone(), tx.clone()));
-        App::run(Settings::with_flags((spawner, tx))).unwrap();
+        // Run the GUI
+        let native_options = eframe::NativeOptions::default();
+        eframe::run_native(
+            "Frost byte",
+            native_options,
+            Box::new(move |cc| Ok(Box::new(App::new(cc, spawner, tx)))),
+        )
+        .expect("Failed to run app");
 
         Ok(())
     })
