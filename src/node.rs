@@ -1,6 +1,6 @@
-use crate::init_capnp;
-use crate::node_capnp;
-use crate::proxy_capnp;
+use bitcoin_ipc::init_capnp;
+use bitcoin_ipc::node_capnp;
+use bitcoin_ipc::proxy_capnp;
 
 // Create Node client
 pub async fn create_node_client(

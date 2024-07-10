@@ -1,5 +1,5 @@
-use crate::init_capnp;
-use crate::proxy_capnp;
+use bitcoin_ipc::init_capnp;
+use bitcoin_ipc::proxy_capnp;
 use capnp_rpc::{rpc_twoparty_capnp, twoparty, RpcSystem};
 use std::path::Path;
 use tokio::net::UnixStream;

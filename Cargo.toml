@@ -5,12 +5,9 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
-capnp = "0.19.3"
-capnp-rpc = "0.19.0"
 iced = { version = "0.12.1", features = ["tokio", "debug", "image", "advanced", "webgl", "lazy"] }
 lazy_static = "1.4.0"
 tokio = { version = "1.37.0", features = ["rt-multi-thread", "net", "process", "full"] }
 tokio-util = { version = "0.7.10", features = ["full"] }
-
-[build-dependencies]
-capnpc = "0.19.0"
+bitcoin-ipc = { path = "../bitcoin-ipc" }
+capnp-rpc = "0.19.2"

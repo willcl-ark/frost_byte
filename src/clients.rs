@@ -1,6 +1,6 @@
-use crate::echo_capnp::echo;
-use crate::init_capnp::init;
-use crate::proxy_capnp::thread;
+use bitcoin_ipc::echo_capnp::echo;
+use bitcoin_ipc::init_capnp::init;
+use bitcoin_ipc::proxy_capnp::thread;
 use std::sync::RwLock;
 
 pub struct Clients {
