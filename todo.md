@@ -5,6 +5,7 @@
 - GUI application can start node on it's own (bundled like Bitcoin-QT)
     - Something like `./src/bitcoin-node -ipcbind=unix://home/will/.bitcoin/sockets/node.sock -debug=ipc -regtest -daemon=0`
     - Can later demo connecting to a remote node
+- Add ws-tunnel to demo remote node
 
 ## Will todo
 
@@ -47,20 +48,15 @@
         - Or equivalent for `verifychain`
 
 - Subscribe to `updatedBlockTip` and pop-up on a new block arriving
-
-## Reproducible builds
-
-! @josie
-
-
-## Misc
-
-* Move IPC stuff into bitcoin-ipc crate
-* Add miner-ipc ptoto files
-* Document bitcoin-ipc
+- [x] Move IPC stuff into bitcoin-ipc crate
+- [ ] Move more IPC stuff into bitcoin-ipc crate
+- [ ] Add miner-ipc proto files
+- [ ] Document bitcoin-ipc
+- [ ] Reproducible builds
 
 ## Overview discussion questions
 
 * How do kernel and MP fit together?
 * Overall design doc
 * Security implications/tradeoffs
+* Duncan, can we vendor libmultiprocess with bitcoin-ipc
