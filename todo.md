@@ -8,19 +8,20 @@
 
 ## Will todo
 
-- On launch:
+    - On launch:
     - Show that we're connected to the node with traffic light?
     - Corner widget showing sync progress/number peers etc., after creating `ChainClient`:
+        - See https://github.com/ryanofsky/bitcoin/blob/45ef1e42f8c71c724e4b091f1024545364716761/src/ipc/capnp/node.capnp#L62C1-L68C120 for example
 
-        ```
-        Blocks: 850536
-        Headers: 850536
-        Verification progress: 99.9998%
-        Difficulty: 83675262295059.91
+    ```
+    Blocks: 850536
+    Headers: 850536
+    Verification progress: 99.9998%
+    Difficulty: 83675262295059.91
 
-        Network: in 10, out 12, total 22
-        Version: 279900
-        ```
+    Network: in 10, out 12, total 22
+    Version: 279900
+    ```
 
 - GUI can call `listWalletDir` and get a list of available wallets
     - show existing wallets via `listWallets` in a drop down
@@ -28,6 +29,7 @@
         - Create wallet pop-up with various options
 
 - Now at "homepage" with "balance", "send", "receive"
+- Make a "Get new address" button
 
 
 ## Josie
@@ -50,3 +52,15 @@
 
 ! @josie
 
+
+## Misc
+
+* Move IPC stuff into bitcoin-ipc crate
+* Add miner-ipc ptoto files
+* Document bitcoin-ipc
+
+## Overview discussion questions
+
+* How do kernel and MP fit together?
+* Overall design doc
+* Security implications/tradeoffs
