@@ -1,6 +1,6 @@
-use crate::echo_capnp;
-use crate::init_capnp;
-use crate::proxy_capnp;
+use bitcoin_ipc::echo_capnp;
+use bitcoin_ipc::init_capnp;
+use bitcoin_ipc::proxy_capnp;
 
 // Create Echo client
 pub async fn create_echo_client(

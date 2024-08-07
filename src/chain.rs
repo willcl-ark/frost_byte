@@ -1,6 +1,6 @@
-use crate::chain_capnp;
-use crate::init_capnp;
-use crate::proxy_capnp;
+use bitcoin_ipc::chain_capnp;
+use bitcoin_ipc::init_capnp;
+use bitcoin_ipc::proxy_capnp;
 
 // Create a Chain client
 pub async fn create_chain_client(

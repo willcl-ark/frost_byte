@@ -482,6 +482,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
 
 [[package]]
+name = "bitcoin-ipc"
+version = "0.1.0"
+source = "git+https://github.com/bitcoin-dev-tools/bitcoin-ipc.git#05809890f571ad57c6971537995a05c3f3e24aca"
+dependencies = [
+ "capnp",
+ "capnp-rpc",
+ "capnpc",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1209,9 +1219,9 @@ name = "frost_byte"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bitcoin-ipc",
  "capnp",
  "capnp-rpc",
- "capnpc",
  "eframe",
  "egui",
  "lazy_static",

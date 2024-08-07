@@ -1,6 +1,6 @@
-use crate::node_capnp;
-use crate::proxy_capnp;
-use crate::wallet_capnp;
+use bitcoin_ipc::node_capnp;
+use bitcoin_ipc::proxy_capnp;
+use bitcoin_ipc::wallet_capnp;
 
 // Manage wallets using the Node client
 pub async fn create_wallet_loader_client(
