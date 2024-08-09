@@ -7,51 +7,49 @@ In addition, we currently use the `ipcbind` option introduced by [#19460](https:
 
 You can either cherry-pick both together, or use [this branch](https://github.com/willcl-ark/bitcoin/tree/pr/ipc) which includes the latter cherry-picked onto the former.
 
-Bitcoin Core requires the installation of [libmultiprocess](https://github.com/chaincodelabs/libmultiprocess).
+Additionally, Bitcoin Core will depend on libmultiprocess and libcapnp.
+These are both available in [depends](https://github.com/bitcoin/bitcoin/blob/master/depends/README.md).
 
-After this, don't forget to configure Bitcoin Core with `./configure --enable-multiprocess` to build the `bitcoin-node` binary.
+To build Bitcoin Core with these libs you can something like:
+
+```bash
+cd /path/to/bitcoin/src
+cd depends
+make -j`nproc` NO_QT=1 NO_BDB=1 NO_QR=1 MULTIPROCESS=1
+# Actual path to config.site differs per host-platform-triplet
+CONFIG_SITE=$PWD/depends/x86_64-pc-linux-gnu/share/config.site ./configure
+make -j`nproc`
+```
+
+Check the configure output along the way for multiprocess enabled:
+
+```log
+Options used to compile and link:
+  external signer = yes
+  multiprocess    = yes
+```
 
 ## Frost Byte
 
 ### Build proto files
 
-To compile the cap'n'proto schema files into their rust bindings (needed to run Frost Byte), clone this project and run:
-
-```bash
-cargo build
-```
-
+The cap'n'proto files from /schema will be automatically built as part of the cargo build by the bitcoin-ipc crate.
 All schema files found in `schema/` will have equivalent rust modules generated in the `src/` directory and be available to the rest of the project.
 
-### Wallet creation test
+### Demo run application
 
-This will create a new wallet called "frost_byte".
-To run the test, you should first start `bitcoin-node` with the `-ipcbind=` option set, e.g.:
-
-```bash
-./src/bitcoin-node -regtest -ipc-connect=/home/user/.bitcoin/sockets/node.sock
-```
-
-Once `bitcoin-node` is running, you can run the Frost Byte test:
+To run frost_byte you either need to start `bitcoin-node` manually and provide the socket address to it (else a default of `$HOME/.bitcoin/sockets/node.sock` is tried), or use the `--spawn` option:
 
 ```bash
-cargo run /home/user/.bitcoin/sockets/node.sock
+# socket method
+## start bitcoin-node with ipcbind
+/path/to/src/bitcoin/src/bitcoin-node -ipcbind=unix:/$HOME/.bitcoin/sockets/node.sock -debug=ipc -daemon=0
+## connect frost_byte
+cargo run -- --socket $HOME/.bitcoin/sockets/node.sock
+
+# auto-spawn method
+cargo run -- --spawn /path/to/bitcoin/src/bitcoin-node
 ```
 
-You should see output in the terminal that various clients were successfully created and queried:
+This will open a GUI window with two buttons to create different client connections.
 
-```log
-₿ cargo run /home/user/.bitcoin/sockets/node.sock
-   Compiling frost_byte v0.1.0 (/home/user/src/frost_byte)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.95s
-     Running `target/debug/frost_byte /home/user/.bitcoin/sockets/node.sock`
-received construct response: (threadMap = <external capability>)
-received thread response: (result = <external capability>)
-received echo_client response: (result = <external capability>)
-received echo response: (result = "Hello, world!")
-received chain_client response: (result = <external capability>)
-received chain response: (result = 20054, hasResult = true)
-received make_node_request response: (result = <external capability>)
-received cwl request: (result = <external capability>)
-got a list wallet dir response: (result = ["test", "frost_byte", "test-legacy", "default", "descriptor", "encrypted_blank", "big", "tmp_to_export"])
-```
