@@ -1,7 +1,10 @@
 use crate::clients::Clients;
 use crate::echo::create_echo_client;
+use crate::wallet::create_new_wallet;
 use anyhow::{anyhow, Result};
 use bitcoin_ipc::init::setup_connection;
+use bitcoin_ipc::node::create_node_client;
+use bitcoin_ipc::wallet::create_wallet_loader_client;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::oneshot;
@@ -12,6 +15,8 @@ pub enum Task {
     SendEchoRequest(oneshot::Sender<Result<()>>),
     SetupChainClient(oneshot::Sender<Result<()>>),
     SetupNodeClient(oneshot::Sender<Result<()>>),
+    SetupWalletLoaderClient(oneshot::Sender<Result<()>>),
+    CreateNewWallet(oneshot::Sender<Result<()>>),
 }
 
 pub async fn run_task(task: Task, shared_state: Arc<Clients>) -> Result<()> {
@@ -55,6 +60,74 @@ pub async fn run_task(task: Task, shared_state: Arc<Clients>) -> Result<()> {
                     *echo_lock = Some(echo_client);
                 }
 
+                response.send(Ok(())).unwrap_or(());
+            } else {
+                let err = anyhow!("Clients are not initialized");
+                response.send(Err(err)).unwrap_or(());
+                return Err(anyhow!("Clients are not initialized"));
+            }
+        }
+        Task::SetupNodeClient(response) => {
+            let init_client = shared_state.init_client.read().unwrap();
+            let thread_client = shared_state.thread_client.read().unwrap();
+
+            // Check if the clients are available
+            if let (Some(ref init), Some(ref thread)) = (&*init_client, &*thread_client) {
+                let node_client = match create_node_client(init, thread).await {
+                    Ok(client) => client,
+                    Err(e) => {
+                        let err = anyhow!("Failed to create node client: {}", e);
+                        response.send(Err(err)).unwrap_or(());
+                        return Err(anyhow!("Failed to create node client"));
+                    }
+                };
+
+                {
+                    let mut node_lock = shared_state.node_client.write().unwrap();
+                    *node_lock = Some(node_client);
+                }
+
+                response.send(Ok(())).unwrap_or(());
+            } else {
+                let err = anyhow!("Clients are not initialized");
+                response.send(Err(err)).unwrap_or(());
+                return Err(anyhow!("Clients are not initialized"));
+            }
+        }
+        Task::SetupWalletLoaderClient(response) => {
+            let node_client = shared_state.node_client.read().unwrap();
+            let thread_client = shared_state.thread_client.read().unwrap();
+
+            // Check if the clients are available
+            if let (Some(ref node), Some(ref thread)) = (&*node_client, &*thread_client) {
+                let wallet_client = match create_wallet_loader_client(node, thread).await {
+                    Ok(client) => client,
+                    Err(e) => {
+                        let err = anyhow!("Failed to create node client: {}", e);
+                        response.send(Err(err)).unwrap_or(());
+                        return Err(anyhow!("Failed to create node client"));
+                    }
+                };
+
+                {
+                    let mut wallet_lock = shared_state.wallet_loader_client.write().unwrap();
+                    *wallet_lock = Some(wallet_client);
+                }
+
+                response.send(Ok(())).unwrap_or(());
+            } else {
+                let err = anyhow!("Clients are not initialized");
+                response.send(Err(err)).unwrap_or(());
+                return Err(anyhow!("Clients are not initialized"));
+            }
+        }
+        Task::CreateNewWallet(response) => {
+            let wallet_loader_client = shared_state.wallet_loader_client.read().unwrap();
+            let thread_client = shared_state.thread_client.read().unwrap();
+            if let (Some(ref wallet_loader), Some(ref thread)) =
+                (&*wallet_loader_client, &*thread_client)
+            {
+                let _wallet = create_new_wallet(wallet_loader, thread, "frost_byte").await;
                 response.send(Ok(())).unwrap_or(());
             } else {
                 let err = anyhow!("Clients are not initialized");
