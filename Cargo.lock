@@ -533,11 +533,13 @@ checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
 [[package]]
 name = "bitcoin-ipc"
 version = "0.1.0"
-source = "git+https://github.com/bitcoin-dev-tools/bitcoin-ipc.git#05809890f571ad57c6971537995a05c3f3e24aca"
+source = "git+https://github.com/bitcoin-dev-tools/bitcoin-ipc.git?branch=move-frostbyte-code-over#64e64d4a92fe61bdae2f4a4776f06f2a5dda5dea"
 dependencies = [
  "capnp",
  "capnp-rpc",
  "capnpc",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]
