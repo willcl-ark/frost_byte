@@ -1,7 +1,7 @@
 use crate::clients::Clients;
 use crate::echo::create_echo_client;
-use crate::init::setup_connection;
 use anyhow::{anyhow, Result};
+use bitcoin_ipc::init::setup_connection;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::oneshot;
