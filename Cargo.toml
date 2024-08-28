@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
-bitcoin-ipc = { git = "https://github.com/bitcoin-dev-tools/bitcoin-ipc.git", branch = "move-frostbyte-code-over" }
+bitcoin-ipc = { git = "https://github.com/bitcoin-dev-tools/bitcoin-ipc.git", branch = "main" }
 capnp = "0.19.3"
 capnp-rpc = "0.19.0"
 clap = { version = "4.5.13", features = ["derive"] }

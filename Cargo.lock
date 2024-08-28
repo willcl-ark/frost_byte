@@ -533,7 +533,7 @@ checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
 [[package]]
 name = "bitcoin-ipc"
 version = "0.1.0"
-source = "git+https://github.com/bitcoin-dev-tools/bitcoin-ipc.git?branch=move-frostbyte-code-over#64e64d4a92fe61bdae2f4a4776f06f2a5dda5dea"
+source = "git+https://github.com/bitcoin-dev-tools/bitcoin-ipc.git?branch=main#77cf3fa5cd7c189b00e48b665573ff55f8853806"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -1906,9 +1906,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.21"
+version = "0.4.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
+checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 
 [[package]]
 name = "malloc_buf"

@@ -107,10 +107,30 @@ fn main() -> Result<()> {
             while let Some(message) = rx.recv().await {
                 match message {
                     WalletMessage::CreateNewWallet => {
+                        // NodeClient
                         let (send, response) = tokio::sync::oneshot::channel();
-                        spawner_clone.spawn(Task::SetupEchoClient(send));
+                        spawner_clone.spawn(Task::SetupNodeClient(send));
                         match response.await {
-                            Ok(Ok(())) => println!("Echo client setup successfully"),
+                            Ok(Ok(())) => println!("NodeClient setup successfully"),
+                            Ok(Err(e)) => println!("Error occurred: {}", e),
+                            Err(_) => println!("The sender dropped"),
+                        }
+
+                        // WalletLoaderClient
+                        // This fails, and I don't know why!
+                        let (send, response) = tokio::sync::oneshot::channel();
+                        spawner_clone.spawn(Task::SetupWalletLoaderClient(send));
+                        match response.await {
+                            Ok(Ok(())) => println!("WalletLoaderClient setup successfully"),
+                            Ok(Err(e)) => println!("Error occurred: {}", e),
+                            Err(_) => println!("The sender dropped"),
+                        }
+
+                        // CreateNewWallet
+                        let (send, response) = tokio::sync::oneshot::channel();
+                        spawner_clone.spawn(Task::CreateNewWallet(send));
+                        match response.await {
+                            Ok(Ok(())) => println!("Created new wallet setup successfully"),
                             Ok(Err(e)) => println!("Error occurred: {}", e),
                             Err(_) => println!("The sender dropped"),
                         }
