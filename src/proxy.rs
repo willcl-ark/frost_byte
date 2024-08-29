@@ -27,7 +27,7 @@ impl Connection {
     }
 }
 
-struct ProxyClient<T: Send + Sync + 'static> {
+pub struct ProxyClient<T: Send + Sync + 'static> {
     client: Arc<RwLock<T>>,
     connection: Arc<Connection>,
 }
@@ -40,9 +40,15 @@ impl<T: Send + Sync + 'static> ProxyClient<T> {
         }
     }
 
-    async fn invoke<F, R>(&self, f: F) -> Result<R, Box<dyn std::error::Error + Send + Sync>>
+    pub async fn invoke<F, Fut, R>(
+        &self,
+        f: F,
+    ) -> Result<R, Box<dyn std::error::Error + Send + Sync>>
     where
-        F: FnOnce(&mut T) -> R + Send + 'static,
+        F: FnOnce(&T) -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = Result<R, Box<dyn std::error::Error + Send + Sync>>>
+            + Send
+            + 'static,
         R: Send + 'static,
     {
         let client = self.client.clone();
@@ -50,8 +56,8 @@ impl<T: Send + Sync + 'static> ProxyClient<T> {
 
         connection
             .run_on_event_loop(|| async move {
-                let mut client = client.write().await;
-                Ok(f(&mut client))
+                let client = client.read().await;
+                f(&client).await
             })
             .await
     }

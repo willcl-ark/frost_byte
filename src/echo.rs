@@ -2,11 +2,13 @@ use bitcoin_ipc::echo_capnp;
 use bitcoin_ipc::init_capnp;
 use bitcoin_ipc::proxy_capnp;
 
+use crate::proxy_types::ThreadSafeEchoClient;
+
 // Create Echo client
 pub async fn create_echo_client(
     init_client: &init_capnp::init::Client,
     thread_client: &proxy_capnp::thread::Client,
-) -> Result<echo_capnp::echo::Client, Box<dyn std::error::Error>> {
+) -> Result<ThreadSafeEchoClient, Box<dyn std::error::Error + Send + Sync>> {
     let mut make_echo_request = init_client.make_echo_request();
     make_echo_request
         .get()
@@ -19,7 +21,9 @@ pub async fn create_echo_client(
         echo_client_response.get()?
     );
 
-    Ok(echo_client_response.get()?.get_result()?)
+    Ok(ThreadSafeEchoClient::new(
+        echo_client_response.get()?.get_result()?,
+    ))
 }
 
 // Send Echo request
